@@ -6,6 +6,11 @@ getcontext().prec = 30
 class Vector (object):
 
     CANNOT_NORMALIZE_ZERO_VECTOR_MSG = 'Cannot normalize the zero vector'
+    ONLY_DEFINED_IN_TWO_THREE_DIMS_MSG = 'Only defined for three dimensional components'
+    NO_UNIQUE_PARALLEL_COMPONENT_MSG = 'No unique parallel component'
+    NO_UNIQUE_ORTHOGONAL_COMPONENT_MSG = 'No unique orthogonal component'
+    PARALLELOGRAM_AREA_MORE_THAN3DIMS_NOTPOSSIBLE = 'PARALLELOGRAM_AREA_MORE_THAN3DIMS_NOTPOSSIBLE'
+    TRIANGLE_AREA_MORE_THAN3DIMS_NOTPOSSIBLE = 'TRIANGLE_AREA_MORE_THAN3DIMS_NOTPOSSIBLE'
     
     def __init__(self,coordinates):
         try:
@@ -96,4 +101,71 @@ class Vector (object):
         return (abs(self.dot(w)) < tolerance)
     
     
+    def project_on(self,b):
+        #to determine self parallel over b
+        try:
+            u = b.normalization()
+            weight = self.dot(u)
+            return u.times_scalar(weight)
+        except Exception as e:
+            if str(e) == self.CANNOT_NORMALIZE_ZERO_VECTOR_MSG:
+                raise Exception(self.NO_UNIQUE_PARALLEL_COMPONENT_MSG)
+            else:
+                raise e
+
+    def find_ortho(self,b):
+        try:
+            parallel_component = self.project_on(b)
+            ortho_component = self - parallel_component
+            return ortho_component
+        except Exception as e:
+            if str(e) == self.NO_UNIQUE_PARALLEL_COMPONENT_MSG:
+                raise Exception(self.NO_UNIQUE_ORTHOGONAL_COMPONENT_MSG)
+            else:
+                raise e
+
+    def cross(self,w):
+        try:
+            x1,y1,z1 = self.coordinates
+            x2,y2,z2 = w.coordinates
+
+            product = [ y1*z2 - y2*z1,
+                        -(x1*z2 - x2*z1),
+                        x1*y2 -x2*y1]
+            return Vector(product)
         
+        except ValueError as e:
+            if str(e) == 'need more than 2 values to unpack':
+                self_modified = Vector(self.coordinates +('0',))
+                w_modified = Vector(w.coordinates +('0',))
+                print self_modified
+                print w_modified
+                return self_modified.cross(w_modified)
+            elif (str(e) == 'too many values to unpack') or \
+                 (str(e) == 'need more than 1 value to unpack'):
+                raise Exception(self.ONLY_DEFINED_IN_TWO_THREE_DIMS_MSG)
+            else:
+                raise e
+            
+    def area_of_parallelogram(self,w):
+        try:
+            productVec = self.cross(w)
+            return productVec.magnitude()
+        except Exception as e:
+            msg = str(e)
+            if msg == self.ONLY_DEFINED_IN_TWO_THREE_DIMS_MSG:
+                raise Exception(self.PARALLELOGRAM_AREA_MORE_THAN3DIMS_NOTPOSSIBLE)
+            else:
+                raise e
+
+    def area_of_triangle(self,w):
+        try:
+            parallelogram_area = self.area_of_parallelogram(w)
+            return parallelogram_area/Decimal(2)
+        except Exception as e:
+            msg = str(e)
+            if msg == self.PARALLELOGRAM_AREA_MORE_THAN3DIMS_NOTPOSSIBLE:
+                raise Exception(self.TRIANGLE_AREA_MORE_THAN3DIMS_NOTPOSSIBLE)
+            else:
+                raise e
+            
