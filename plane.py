@@ -33,7 +33,7 @@ class Plane(object):
             initial_index = Plane.first_nonzero_index(n)
             initial_coefficient = n[initial_index]
 
-            basepoint_coords[initial_index] = c/initial_coefficient
+            basepoint_coords[initial_index] = c/Decimal(initial_coefficient)
             self.basepoint = Vector(basepoint_coords)
 
         except Exception as e:
@@ -96,7 +96,25 @@ class Plane(object):
                 return k
         raise Exception(Plane.NO_NONZERO_ELTS_FOUND_MSG)
 
+    def is_parallel(self,p1):
+        return (Vector(self.normal_vector).check_parallel(Vector(p1.normal_vector)))
 
+    def __eq__(self,p1):
+        if Vector(self.normal_vector).is_zero():
+            if not Vector(p1.normal_vector).is_zero():
+                return False
+            else:
+                diff = self.constant_term - p1.constant.term
+                return MyDecimal(diff).is_near_zero()
+        elif Vector(p1.normal_vector).is_zero():
+            return False
+        
+        if not self.is_parallel(p1):
+            return False
+        
+        diff_coord_vec = (self.basepoint - p1.basepoint)
+        return (Vector(self.normal_vector).check_ortho(diff_coord_vec)) and (Vector(p1.normal_vector).check_ortho(diff_coord_vec))
+        
 class MyDecimal(Decimal):
     def is_near_zero(self, eps=1e-10):
         return abs(self) < eps
