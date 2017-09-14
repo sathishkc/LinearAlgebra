@@ -138,8 +138,6 @@ class Vector (object):
             if str(e) == 'need more than 2 values to unpack':
                 self_modified = Vector(self.coordinates +('0',))
                 w_modified = Vector(w.coordinates +('0',))
-                print self_modified
-                print w_modified
                 return self_modified.cross(w_modified)
             elif (str(e) == 'too many values to unpack') or \
                  (str(e) == 'need more than 1 value to unpack'):
