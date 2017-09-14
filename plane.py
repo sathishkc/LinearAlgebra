@@ -71,8 +71,8 @@ class Plane(object):
 
         try:
             initial_index = Plane.first_nonzero_index(n)
-            terms = [write_coefficient(n[i], is_initial_term=(i==initial_index)) + 'x_{}'.format(i+1)
-                     for i in range(self.dimension) if round(n[i], num_decimal_places) != 0]
+            terms = [write_coefficient(int(n[i]), is_initial_term=(i==initial_index)) + 'x_{}'.format(i+1)
+                     for i in range(self.dimension) if round(int(n[i]), num_decimal_places) != 0]
             output = ' '.join(terms)
 
         except Exception as e:
@@ -104,7 +104,7 @@ class Plane(object):
             if not Vector(p1.normal_vector).is_zero():
                 return False
             else:
-                diff = self.constant_term - p1.constant.term
+                diff = self.constant_term - p1.constant_term
                 return MyDecimal(diff).is_near_zero()
         elif Vector(p1.normal_vector).is_zero():
             return False
